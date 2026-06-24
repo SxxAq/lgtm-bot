@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:////data/lgtm.db
+    volumes:
+      - lgtm_data:/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  lgtm_data:
+    driver: local
