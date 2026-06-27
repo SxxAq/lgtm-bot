@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # ── GitHub ────────────────────────────────────────────────────────────────
     GITHUB_TOKEN: str = ""  # Optional — raises rate limit from 60 to 5000 req/hr
-    GITHUB_REPO: str = "fossasia/eventyay-talk"
+    GITHUB_REPO: str = "fossasia/eventyay"
 
     # ── Database ──────────────────────────────────────────────────────────────
     DATABASE_URL: str = "sqlite+aiosqlite:///./lgtm.db"
