@@ -113,13 +113,29 @@ async def handle_pr_command(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 # ── Subcommand handlers ───────────────────────────────────────────────────────
 
 async def _pr_add(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    pr_number = _require_pr_number(context.args, "/pr add <number>")
-    if pr_number is None:
-        await _reply(update, "Usage: /pr add &lt;number&gt;\nExample: /pr add 3975")
+    repo = None
+    pr_number = None
+
+    if len(context.args) >= 3 and context.args[2].isdigit():
+        repo = context.args[1]
+        pr_number = int(context.args[2])
+    elif len(context.args) >= 2 and context.args[1].isdigit():
+        pr_number = int(context.args[1])
+    else:
+        await _reply(
+            update,
+            "Usage: /pr add &lt;number&gt; OR /pr add &lt;repo&gt; &lt;number&gt;\n"
+            "Examples:\n"
+            "• /pr add 3975\n"
+            "• /pr add eventyay 123\n"
+            "• /pr add eventyay-hubspot 22\n"
+            "• /pr add eventyay-teamshifts 45\n"
+            "• /pr add eventyay-socialmedia 67"
+        )
         return
 
     async with AsyncSessionLocal() as session:
-        pr = await pr_service.add_pr(session, pr_number)
+        pr = await pr_service.add_pr(session, pr_number, repo=repo)
 
     await _reply(
         update,

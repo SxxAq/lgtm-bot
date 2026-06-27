@@ -112,7 +112,7 @@ def fmt_board(board: dict[PRStatus, list[PullRequest]]) -> str:
         lines.append(f"\n{emoji} <b>{label}</b>")
         for pr in prs:
             priority_badge = " 🚨" if pr.priority else ""
-            lines.append(f"\n<code>#{pr.github_pr_number}</code>{priority_badge}")
+            lines.append(f"\n<a href='{pr.url}'><b>#{pr.github_pr_number}</b></a>{priority_badge}")
             lines.append(f"<i>{_short_title(pr.title)}</i>")
             active = _active_reviewers(pr)
             completed = _completed_reviewers(pr)
@@ -135,7 +135,7 @@ def fmt_pending(prs: list[PullRequest]) -> str:
         active = _active_reviewers(pr)
         reviewer_str = ", ".join(f"@{u}" for u in active) if active else "none"
         lines.append(
-            f"<code>#{pr.github_pr_number}</code>  <i>{_short_title(pr.title, 40)}</i>\n"
+            f"<a href='{pr.url}'><b>#{pr.github_pr_number}</b></a>  <i>{_short_title(pr.title, 40)}</i>\n"
             f"Reviewers: {reviewer_str}\n"
         )
     return "\n".join(lines)
@@ -146,7 +146,7 @@ def fmt_my_reviews(prs: list[PullRequest], username: str) -> str:
         return f"📭 You have no active reviews, @{username}."
     lines = ["<b>Your Active Reviews</b>\n"]
     for pr in prs:
-        lines.append(f"• <code>#{pr.github_pr_number}</code>  <i>{_short_title(pr.title)}</i>")
+        lines.append(f"• <a href='{pr.url}'><b>#{pr.github_pr_number}</b></a>  <i>{_short_title(pr.title)}</i>")
     return "\n".join(lines)
 
 
@@ -195,7 +195,7 @@ def fmt_aging(aging_data: list[tuple]) -> str:
         suffix = "days" if age_days != 1 else "day"
         warning = " ⚠️" if age_days > 7 else ""
         lines.append(
-            f"<code>#{pr.github_pr_number}</code> — {age_days} {suffix} old{warning}\n"
+            f"<a href='{pr.url}'><b>#{pr.github_pr_number}</b></a> — {age_days} {suffix} old{warning}\n"
             f"<i>{_short_title(pr.title, 45)}</i>\n"
         )
     return "\n".join(lines)
@@ -243,7 +243,8 @@ def fmt_help() -> str:
     return (
         "<b>LGTM Bot — PR Review Queue</b>\n\n"
         "<b>Commands:</b>\n"
-        "  /pr add &lt;number&gt; — Add PR to queue\n"
+        "  /pr add [&lt;repo&gt;] &lt;number&gt; — Add PR to queue\n"
+        "    <i>(repos: eventyay-talk, eventyay, eventyay-hubspot, eventyay-teamshifts, etc.)</i>\n"
         "  /pr take &lt;number&gt; — Take PR for review\n"
         "  /pr done &lt;number&gt; — Mark your review complete\n"
         "  /pr priority &lt;number&gt; — Flag as priority review\n"

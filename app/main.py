@@ -1,6 +1,7 @@
 """LGTM Bot entry point."""
 from __future__ import annotations
 
+import asyncio
 import logging
 import sys
 
@@ -22,6 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
+    try:
+        asyncio.get_event_loop()
+    except RuntimeError:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
     logger.info("━" * 50)
     logger.info("Starting LGTM Bot")
     logger.info("Repo    : %s", settings.GITHUB_REPO)

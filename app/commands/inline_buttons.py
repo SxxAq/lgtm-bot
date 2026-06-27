@@ -80,6 +80,9 @@ async def button_callback_handler(update: Update, context: ContextTypes.DEFAULT_
         await query.answer(str(e), show_alert=True)
     except LGTMBotError as e:
         await query.answer(str(e), show_alert=True)
-    except Exception:
+    except Exception as e:
+        if "Message is not modified" in str(e):
+            await query.answer("Board is up to date!")
+            return
         logger.exception("Unexpected error in button callback: %s", data)
         await query.answer("An error occurred. Please try again.", show_alert=True)

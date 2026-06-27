@@ -67,7 +67,7 @@ def _recalculate_status(pr: PullRequest) -> None:
 # ── Public service functions ──────────────────────────────────────────────────
 
 
-async def add_pr(session: AsyncSession, pr_number: int) -> PullRequest:
+async def add_pr(session: AsyncSession, pr_number: int, repo: Optional[str] = None) -> PullRequest:
     """Fetch PR details from GitHub and add to review queue."""
     existing = await session.execute(
         select(PullRequest).where(PullRequest.github_pr_number == pr_number)
@@ -75,7 +75,7 @@ async def add_pr(session: AsyncSession, pr_number: int) -> PullRequest:
     if existing.scalar_one_or_none():
         raise PRAlreadyExists(pr_number)
 
-    gh_data = await github_client.get_pull_request(pr_number)
+    gh_data = await github_client.get_pull_request(pr_number, repo=repo)
     parsed = parse_pull_request(gh_data)
 
     if parsed["merged"]:
