@@ -30,62 +30,34 @@ def _short_title(title: str, max_len: int = 50) -> str:
 # ── Command response formatters ───────────────────────────────────────────────
 
 def fmt_pr_added(pr: PullRequest) -> str:
-    labels = json.loads(pr.labels or "[]")
-    label_str = ", ".join(labels) if labels else "None"
     return (
-        f"✅ <b>PR Added</b>\n\n"
-        f"PR <code>#{pr.github_pr_number}</code>\n"
-        f"<b>Title:</b> {pr.title}\n"
-        f"<b>Author:</b> {pr.author}\n"
-        f"<b>Labels:</b> {label_str}\n"
-        f"<b>Status:</b> Waiting Review\n"
-        f"<b>URL:</b> <a href='{pr.url}'>View on GitHub ↗</a>"
+        f"✅ <b>Added <a href='{pr.url}'>#{pr.github_pr_number}</a></b>\n"
+        f"<i>{_short_title(pr.title)}</i> by @{pr.author}"
     )
 
 
 def fmt_pr_taken(pr: PullRequest) -> str:
     active = _active_reviewers(pr)
-    return (
-        f"🔍 <b>Review Started</b>\n\n"
-        f"PR <code>#{pr.github_pr_number}</code>\n"
-        f"<i>{_short_title(pr.title)}</i>\n\n"
-        f"<b>Current Reviewers:</b>\n{_reviewer_list(active)}"
-    )
+    rev_str = ", ".join(f"@{u}" for u in active) if active else "None"
+    return f"🔍 <b>Reviewing <a href='{pr.url}'>#{pr.github_pr_number}</a></b>\nReviewers: {rev_str}"
 
 
 def fmt_pr_done(pr: PullRequest, reviewer_username: str) -> str:
     status_label = pr.status.replace("_", " ").title()
-    return (
-        f"✅ <b>Review Completed</b>\n\n"
-        f"PR <code>#{pr.github_pr_number}</code>\n"
-        f"<i>{_short_title(pr.title)}</i>\n\n"
-        f"<b>Reviewer:</b> @{reviewer_username}\n"
-        f"<b>New Status:</b> {status_label}"
-    )
+    return f"✅ <b>Completed <a href='{pr.url}'>#{pr.github_pr_number}</a></b> (@{reviewer_username}) → <b>{status_label}</b>"
 
 
 def fmt_pr_priority(pr: PullRequest, requester: str) -> str:
     return (
-        f"🚨 <b>PRIORITY REVIEW REQUESTED</b>\n\n"
-        f"PR <code>#{pr.github_pr_number}</code>\n"
-        f"<i>{pr.title}</i>\n\n"
-        f"<b>Requested by:</b> @{requester}\n"
-        f"<b>URL:</b> <a href='{pr.url}'>View on GitHub ↗</a>\n\n"
-        f"Please review as soon as possible! 🙏"
+        f"🚨 <b>Priority Review: <a href='{pr.url}'>#{pr.github_pr_number}</a></b>\n"
+        f"<i>{_short_title(pr.title)}</i> (by @{requester})"
     )
 
 
 def fmt_pr_picked(pr: PullRequest, prior_active_count: int) -> str:
-    if prior_active_count == 0:
-        reason = "Oldest PR with no reviewers"
-    else:
-        reason = f"Oldest PR with fewest reviewers ({prior_active_count} active)"
     return (
-        f"🎯 <b>PR Assigned to You</b>\n\n"
-        f"PR <code>#{pr.github_pr_number}</code>\n"
-        f"<i>{pr.title}</i>\n\n"
-        f"<b>Reason:</b> {reason}\n"
-        f"<b>URL:</b> <a href='{pr.url}'>View on GitHub ↗</a>"
+        f"🎯 <b>Assigned <a href='{pr.url}'>#{pr.github_pr_number}</a></b>\n"
+        f"<i>{_short_title(pr.title)}</i>"
     )
 
 
@@ -244,14 +216,16 @@ def fmt_help() -> str:
         "<b>LGTM Bot — PR Review Queue</b>\n\n"
         "<b>Commands:</b>\n"
         "  /pr add [&lt;repo&gt;] &lt;number&gt; — Add PR to queue\n"
-        "    <i>(repos: eventyay-talk, eventyay, eventyay-hubspot, eventyay-teamshifts, etc.)</i>\n"
+        "    <i>(Supports any fossasia repo: eventyay, eventyay-socialmedia, eventyay-exhibition, eventyay-hubspot, etc.)</i>\n"
         "  /pr take &lt;number&gt; — Take PR for review\n"
         "  /pr done &lt;number&gt; — Mark your review complete\n"
+        "  /pr remove &lt;number&gt; — Remove PR from queue\n"
+        "  /pr status &lt;number&gt; &lt;STATUS&gt; — Set PR status\n"
         "  /pr priority &lt;number&gt; — Flag as priority review\n"
-        "  /pr board — Show full review board\n"
+        "  /pr board — Show review board\n"
         "  /pr pick — Auto-assign an unreviewed PR to you\n"
-        "  /pr pending — List all pending PRs\n"
-        "  /pr mine — Show your active reviews\n"
+        "  /pr pending — List pending PRs\n"
+        "  /pr mine — Show active reviews\n"
         "  /pr stats — Reviewer statistics\n"
         "  /pr leaderboard — Top reviewers\n"
         "  /pr streak — Review streaks\n"
@@ -259,6 +233,4 @@ def fmt_help() -> str:
         "<b>Admin Commands:</b>\n"
         "  /pr sync — Sync PR status with GitHub\n"
         "  /pr force-close &lt;number&gt; — Force-close a PR\n"
-        "  /pr remove &lt;number&gt; — Remove PR from queue\n"
-        "  /pr status &lt;number&gt; &lt;STATUS&gt; — Set PR status\n"
     )

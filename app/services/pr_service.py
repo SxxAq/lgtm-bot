@@ -8,7 +8,8 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.github.client import github_client
+from app.config import settings
+from app.github.client import github_client, normalize_repo
 from app.github.parser import parse_pull_request
 from app.models.pr import PRStatus, PullRequest
 from app.models.reviewer import AssignmentState, ReviewerAssignment
@@ -69,13 +70,17 @@ def _recalculate_status(pr: PullRequest) -> None:
 
 async def add_pr(session: AsyncSession, pr_number: int, repo: Optional[str] = None) -> PullRequest:
     """Fetch PR details from GitHub and add to review queue."""
+    target_repo = normalize_repo(repo or settings.GITHUB_REPO)
     existing = await session.execute(
-        select(PullRequest).where(PullRequest.github_pr_number == pr_number)
+        select(PullRequest).where(
+            PullRequest.github_pr_number == pr_number,
+            PullRequest.repo == target_repo,
+        )
     )
     if existing.scalar_one_or_none():
         raise PRAlreadyExists(pr_number)
 
-    gh_data = await github_client.get_pull_request(pr_number, repo=repo)
+    gh_data = await github_client.get_pull_request(pr_number, repo=target_repo)
     parsed = parse_pull_request(gh_data)
 
     if parsed["merged"]:
@@ -87,6 +92,7 @@ async def add_pr(session: AsyncSession, pr_number: int, repo: Optional[str] = No
 
     pr = PullRequest(
         github_pr_number=parsed["github_pr_number"],
+        repo=target_repo,
         title=parsed["title"],
         author=parsed["author"],
         url=parsed["url"],
@@ -97,7 +103,7 @@ async def add_pr(session: AsyncSession, pr_number: int, repo: Optional[str] = No
     session.add(pr)
     await session.commit()
     await session.refresh(pr)
-    logger.info("Added PR #%d to review queue", pr_number)
+    logger.info("Added PR #%d (%s) to review queue", pr_number, target_repo)
     return pr
 
 
@@ -305,7 +311,7 @@ async def sync_prs(session: AsyncSession) -> dict[str, int]:
 
     for pr in prs:
         try:
-            gh_data = await github_client.get_pull_request(pr.github_pr_number)
+            gh_data = await github_client.get_pull_request(pr.github_pr_number, repo=pr.repo)
             merged = bool(gh_data.get("merged") or gh_data.get("merged_at"))
             state = gh_data.get("state", "open")
 

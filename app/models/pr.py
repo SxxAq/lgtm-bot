@@ -25,8 +25,9 @@ class PullRequest(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     github_pr_number: Mapped[int] = mapped_column(
-        Integer, unique=True, nullable=False, index=True
+        Integer, nullable=False, index=True
     )
+    repo: Mapped[str] = mapped_column(String(256), default="fossasia/eventyay", nullable=False)
     title: Mapped[str] = mapped_column(String(512), nullable=False)
     author: Mapped[str] = mapped_column(String(128), nullable=False)
     url: Mapped[str] = mapped_column(String(512), nullable=False)

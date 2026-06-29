@@ -85,6 +85,7 @@ async def handle_pr_command(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         "force-close": _pr_force_close,
         "remove":      _pr_remove,
         "status":      _pr_status,
+        "merged":      _pr_merged,
         "help":        _pr_help,
     }
 
@@ -274,11 +275,6 @@ async def _pr_force_close(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 async def _pr_remove(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    _, username = _user_info(update)
-    if not _is_admin(username):
-        await _reply(update, "🔒 This command is restricted to admins.")
-        return
-
     pr_number = _require_pr_number(context.args, "/pr remove <number>")
     if pr_number is None:
         await _reply(update, "Usage: /pr remove &lt;number&gt;")
@@ -286,15 +282,21 @@ async def _pr_remove(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
     async with AsyncSessionLocal() as session:
         await pr_service.remove_pr(session, pr_number)
-    await _reply(update, f"🗑️ PR <code>#{pr_number}</code> removed from the queue.")
+    await _reply(update, f"🗑️ PR <code>#{pr_number}</code> removed from queue.")
+
+
+async def _pr_merged(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    pr_number = _require_pr_number(context.args, "/pr merged <number>")
+    if pr_number is None:
+        await _reply(update, "Usage: /pr merged &lt;number&gt;")
+        return
+
+    async with AsyncSessionLocal() as session:
+        pr = await pr_service.set_pr_status(session, pr_number, PRStatus.MERGED)
+    await _reply(update, f"🎉 PR <code>#{pr.github_pr_number}</code> marked as <b>MERGED</b>.")
 
 
 async def _pr_status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    _, username = _user_info(update)
-    if not _is_admin(username):
-        await _reply(update, "🔒 This command is restricted to admins.")
-        return
-
     if len(context.args) < 3 or not context.args[1].isdigit():
         valid = " | ".join(s.value for s in PRStatus)
         await _reply(
@@ -315,7 +317,7 @@ async def _pr_status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         pr = await pr_service.set_pr_status(session, pr_number, status)
     await _reply(
         update,
-        f"✅ PR <code>#{pr.github_pr_number}</code> status set to <b>{status.value}</b>",
+        f"✅ PR <code>#{pr.github_pr_number}</code> set to <b>{status.value}</b>.",
     )
 
 
