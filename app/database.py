@@ -49,7 +49,7 @@ async def init_db() -> None:
                     )
 
                 # SQLite table migration if github_pr_number has unique constraint in sqlite_master
-                if "sqlite" in db_url:
+                if sync_conn.dialect.name == "sqlite":
                     res = sync_conn.execute(text("SELECT sql FROM sqlite_master WHERE type='table' AND name='pull_requests'")).scalar()
                     if res and ("github_pr_number INTEGER UNIQUE" in res or "github_pr_number INTEGER NOT NULL UNIQUE" in res or "UNIQUE (github_pr_number)" in res):
                         sync_conn.execute(text("CREATE TABLE pull_requests_dg_tmp (id INTEGER PRIMARY KEY, github_pr_number INTEGER NOT NULL, repo VARCHAR(256) NOT NULL DEFAULT 'your-org/your-repo', title VARCHAR(512) NOT NULL, author VARCHAR(128) NOT NULL, url VARCHAR(512) NOT NULL, status VARCHAR(17) NOT NULL DEFAULT 'WAITING_REVIEW', priority BOOLEAN NOT NULL DEFAULT 0, labels VARCHAR(1024) DEFAULT '[]', created_at DATETIME NOT NULL, updated_at DATETIME NOT NULL, github_created_at DATETIME)"))
