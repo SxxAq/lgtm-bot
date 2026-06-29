@@ -7,7 +7,7 @@ primary_region = "iad"
 
 [env]
   DATABASE_URL = "sqlite+aiosqlite:////data/lgtm.db"
-  GITHUB_REPO = "fossasia/eventyay"
+  GITHUB_REPO = "your-org/your-repo"
   DIGEST_HOUR = "14"
   DIGEST_MINUTE = "30"
 

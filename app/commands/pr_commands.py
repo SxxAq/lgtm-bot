@@ -128,10 +128,8 @@ async def _pr_add(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "Usage: /pr add &lt;number&gt; OR /pr add &lt;repo&gt; &lt;number&gt;\n"
             "Examples:\n"
             "• /pr add 3975\n"
-            "• /pr add eventyay 123\n"
-            "• /pr add eventyay-hubspot 22\n"
-            "• /pr add eventyay-teamshifts 45\n"
-            "• /pr add eventyay-socialmedia 67"
+            "• /pr add my-repo 123\n"
+            "• /pr add org/repo 45"
         )
         return
 

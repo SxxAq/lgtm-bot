@@ -45,7 +45,7 @@ async def init_db() -> None:
                 cols = [c["name"] for c in inspector.get_columns("pull_requests")]
                 if "repo" not in cols:
                     sync_conn.execute(
-                        text("ALTER TABLE pull_requests ADD COLUMN repo VARCHAR(256) DEFAULT 'fossasia/eventyay'")
+                        text("ALTER TABLE pull_requests ADD COLUMN repo VARCHAR(256) DEFAULT 'your-org/your-repo'")
                     )
 
         await conn.run_sync(_heal_columns)

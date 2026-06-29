@@ -69,7 +69,7 @@ def fmt_board(board: dict[PRStatus, list[PullRequest]]) -> str:
         (PRStatus.CHANGES_REQUESTED, "🔴", "Changes Requested"),
     ]
 
-    lines = ["<b>📋 EVENTYAY REVIEW BOARD</b>"]
+    lines = ["<b>📋 PR REVIEW BOARD</b>"]
     total = sum(len(prs) for prs in board.values())
 
     if total == 0:
@@ -216,7 +216,7 @@ def fmt_help() -> str:
         "<b>LGTM Bot — PR Review Queue</b>\n\n"
         "<b>Commands:</b>\n"
         "  /pr add [&lt;repo&gt;] &lt;number&gt; — Add PR to queue\n"
-        "    <i>(Supports any fossasia repo: eventyay, eventyay-socialmedia, eventyay-exhibition, eventyay-hubspot, etc.)</i>\n"
+        "    <i>(Supports any repo: e.g., my-repo, owner/repo)</i>\n"
         "  /pr take &lt;number&gt; — Take PR for review\n"
         "  /pr done &lt;number&gt; — Mark your review complete\n"
         "  /pr remove &lt;number&gt; — Remove PR from queue\n"

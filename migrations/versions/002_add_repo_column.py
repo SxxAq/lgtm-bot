@@ -26,7 +26,7 @@ def upgrade() -> None:
                 "repo",
                 sa.String(256),
                 nullable=False,
-                server_default="fossasia/eventyay",
+                server_default="your-org/your-repo",
             ),
         )
 

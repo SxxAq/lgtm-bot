@@ -23,7 +23,7 @@ In open-source communities and engineering teams, code reviews frequently get de
 - 📌 **Centralized Review Board**: Visual snapshot of all open PRs categorized by review status with interactive buttons.
 - 🔗 **Direct GitHub Anchors**: Clickable PR tags in Telegram that link straight to GitHub for instant code review.
 - 🎯 **Smart Auto-Pick (`/pr pick`)**: Automatically assigns reviewers to the oldest, most-neglected PRs.
-- 🌐 **Multi-Repository Triage**: Track PRs across any organization repository (`eventyay`, `eventyay-socialmedia`, `eventyay-hubspot`, `eventyay-teamshifts`, etc.).
+- 🌐 **Multi-Repository Triage**: Track PRs across any repository or organization (`my-repo`, `org/repo`, etc.).
 - 🔥 **Gamified Review Streaks & Leaderboards**: Track completed reviews and reward active reviewers with streaks and medals.
 - 📊 **Automated Daily Digests & GitHub Sync**: Keeps status strictly in sync with GitHub every 30 minutes and posts an 8 PM daily summary report to the group.
 
@@ -49,7 +49,7 @@ In open-source communities and engineering teams, code reviews frequently get de
 
 | Command | Description |
 |---------|-------------|
-| `/pr add [<repo>] <number>` | Add a PR to the queue *(e.g., `/pr add 3975` or `/pr add eventyay-socialmedia 12`)* |
+| `/pr add [<repo>] <number>` | Add a PR to the queue *(e.g., `/pr add 3975` or `/pr add my-repo 12`)* |
 | `/pr take <number>` | Claim a PR for review |
 | `/pr done <number>` | Mark your review as completed |
 | `/pr remove <number>` | Remove a PR from the queue after merge or cleanup |
@@ -115,7 +115,7 @@ Your bot is live! Open Telegram and send `/pr help` or `/pr board`.
    - `BOT_TOKEN` = `your_telegram_bot_token`
    - `GROUP_CHAT_ID` = `your_group_chat_id`
    - `ADMIN_USERNAMES` = `your_username`
-   - `GITHUB_REPO` = `fossasia/eventyay`
+   - `GITHUB_REPO` = `your-org/your-repo`
 4. Deploy! Railway automatically detects the `Dockerfile` and builds your service.
 
 ### Option 2: Koyeb (100% Free — No Credit Card Required)
@@ -138,7 +138,7 @@ docker-compose up -d --build
 | `BOT_TOKEN` | ✅ | — | Telegram bot token from @BotFather |
 | `GROUP_CHAT_ID` | ✅ | `0` | Target Telegram group chat ID (negative integer) |
 | `GITHUB_TOKEN` | ⬜ | `""` | GitHub Personal Access Token (raises rate limit to 5000 req/hr) |
-| `GITHUB_REPO` | ⬜ | `fossasia/eventyay` | Primary default GitHub repository |
+| `GITHUB_REPO` | ⬜ | `your-org/your-repo` | Primary default GitHub repository |
 | `DATABASE_URL` | ⬜ | `sqlite+aiosqlite:///./lgtm.db` | Async database connection URL (supports SQLite & PostgreSQL) |
 | `ADMIN_USERNAMES` | ⬜ | `""` | Comma-separated admin usernames (without `@`) |
 | `DIGEST_HOUR` | ⬜ | `14` | Daily digest hour (UTC) |
