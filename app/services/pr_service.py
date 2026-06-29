@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -39,14 +40,16 @@ OPEN_STATUSES = (
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
 
-async def _get_pr(session: AsyncSession, pr_number: int) -> PullRequest:
-    result = await session.execute(
-        select(PullRequest).where(PullRequest.github_pr_number == pr_number)
-    )
-    pr = result.scalar_one_or_none()
-    if pr is None:
+async def _get_pr(session: AsyncSession, pr_number: int, repo: Optional[str] = None) -> PullRequest:
+    query = select(PullRequest).where(PullRequest.github_pr_number == pr_number)
+    if repo:
+        target_repo = normalize_repo(repo)
+        query = query.where(PullRequest.repo == target_repo)
+    result = await session.execute(query.order_by(PullRequest.id.desc()))
+    prs = list(result.scalars().all())
+    if not prs:
         raise PRNotFound(pr_number)
-    return pr
+    return prs[0]
 
 
 def _recalculate_status(pr: PullRequest) -> None:
@@ -101,7 +104,11 @@ async def add_pr(session: AsyncSession, pr_number: int, repo: Optional[str] = No
         github_created_at=parsed["github_created_at"],
     )
     session.add(pr)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise PRAlreadyExists(pr_number)
     await session.refresh(pr)
     logger.info("Added PR #%d (%s) to review queue", pr_number, target_repo)
     return pr
