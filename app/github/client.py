@@ -13,13 +13,13 @@ logger = logging.getLogger(__name__)
 
 
 def normalize_repo(repo_input: str) -> str:
-    """Normalize repo names like 'eventyay' or 'eventyay-talk' to full owner/repo."""
+    """Normalize repo names like 'my-repo' or 'owner/repo' to full owner/repo."""
     if not repo_input:
         return settings.GITHUB_REPO
     if "/" in repo_input:
         return repo_input
-    # Default organization is fossasia
-    return f"fossasia/{repo_input}"
+    org = settings.GITHUB_REPO.split("/")[0] if "/" in settings.GITHUB_REPO else "fossasia"
+    return f"{org}/{repo_input}"
 
 
 class GitHubClient:
