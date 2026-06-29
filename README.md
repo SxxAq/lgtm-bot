@@ -1,236 +1,185 @@
+<div align="center">
+
 # LGTM Bot 🤖
 
-A production-ready Telegram bot for the Eventyay contributor community to centralize and streamline PR reviews.
+**A production-ready Telegram ChatOps bot for open-source communities and dev teams to streamline PR code reviews.**
 
-## What it does
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Database](https://img.shields.io/badge/database-SQLite%20%7C%20PostgreSQL-blueviolet.svg)](https://www.sqlalchemy.org/)
 
-- **Review queue** — track which PRs need reviews in one place
-- **Reviewer assignment** — claim PRs to review, prevent overlap or neglect
-- **Auto-pick** — bot assigns you the most-needy PR automatically
-- **Priority reviews** — flag urgent PRs and notify the group
-- **Review board** — visual snapshot of all PRs grouped by status
-- **Statistics & leaderboard** — see who's reviewing the most
-- **Daily digest** — automatic 8 PM summary posted to the group
-- **Auto-sync** — PR statuses stay up-to-date with GitHub every 30 minutes
+[Features](#-key-features) • [Quickstart](#-quickstart-5-minutes) • [Commands](#-bot-commands) • [Deployment](#-deployment-guides) • [Architecture](#-architecture)
+
+</div>
 
 ---
 
-## Quickstart (5 minutes)
+## ⚡ Why LGTM Bot?
 
-### 1. Create your bot
+In open-source communities and engineering teams, code reviews frequently get delayed because nobody knows who is reviewing what, PRs get neglected, and priority reviews are hard to track.
 
-1. Open Telegram → search **@BotFather** → `/newbot`
-2. Follow the prompts → copy your `BOT_TOKEN`
+**LGTM Bot** solves this directly inside Telegram through **ChatOps & Gamification**:
+- 📌 **Centralized Review Board**: Visual snapshot of all open PRs categorized by review status with interactive buttons.
+- 🔗 **Direct GitHub Anchors**: Clickable PR tags in Telegram that link straight to GitHub for instant code review.
+- 🎯 **Smart Auto-Pick (`/pr pick`)**: Automatically assigns reviewers to the oldest, most-neglected PRs.
+- 🌐 **Multi-Repository Triage**: Track PRs across any organization repository (`eventyay`, `eventyay-socialmedia`, `eventyay-hubspot`, `eventyay-teamshifts`, etc.).
+- 🔥 **Gamified Review Streaks & Leaderboards**: Track completed reviews and reward active reviewers with streaks and medals.
+- 📊 **Automated Daily Digests & GitHub Sync**: Keeps status strictly in sync with GitHub every 30 minutes and posts an 8 PM daily summary report to the group.
+
+---
+
+## 🚀 Key Features
+
+| Feature | Description |
+|---|---|
+| 📋 **Review Queue** | Track pending reviews in one central, organized board |
+| 🔍 **Multi-Reviewer Claims** | Prevent duplicate reviews or assignment overlap |
+| 🎯 **Auto-Pick System** | Intelligently routes unreviewed PRs based on age & workload |
+| 🚨 **Priority Escalation** | Flag urgent PRs and alert team members instantly |
+| 🏆 **Streaks & Leaderboard** | Reward active community reviewers with streaks 🔥 and medals 🥇 |
+| 🔄 **Automatic GitHub Sync** | Auto-detects merged/closed PRs every 30 minutes |
+| 🗄️ **Dual Database Support** | Zero-config SQLite locally, or PostgreSQL/asyncpg for cloud production |
+
+---
+
+## 📋 Bot Commands
+
+### Public Commands (Available to Everyone)
+
+| Command | Description |
+|---------|-------------|
+| `/pr add [<repo>] <number>` | Add a PR to the queue *(e.g., `/pr add 3975` or `/pr add eventyay-socialmedia 12`)* |
+| `/pr take <number>` | Claim a PR for review |
+| `/pr done <number>` | Mark your review as completed |
+| `/pr remove <number>` | Remove a PR from the queue after merge or cleanup |
+| `/pr status <number> <STATUS>` | Manually set PR status (`WAITING_REVIEW`, `IN_REVIEW`, `READY_TO_MERGE`, `CHANGES_REQUESTED`, `MERGED`, `CLOSED`) |
+| `/pr merged <number>` | Shortcut to mark a PR as merged |
+| `/pr priority <number>` | Flag PR for urgent review and alert the group |
+| `/pr board` | Display the interactive visual review board |
+| `/pr pick` | Auto-assign an unreviewed PR to yourself |
+| `/pr pending` | List all PRs waiting for review |
+| `/pr mine` | Show your active reviews |
+| `/pr stats` | Display reviewer activity summary |
+| `/pr leaderboard` | Ranked list of top reviewers |
+| `/pr streak` | Reviewer streaks 🔥 |
+| `/pr aging` | Show PR age report with staleness warnings ⚠️ |
+
+### Admin Commands
+
+| Command | Description |
+|---------|-------------|
+| `/pr sync` | Force sync all PR statuses with GitHub REST API |
+| `/pr force-close <number>` | Force-close a PR record in the queue |
+
+---
+
+## 🛠️ Quickstart (5 Minutes)
+
+### 1. Create your Telegram Bot
+1. Search **@BotFather** in Telegram and send `/newbot`.
+2. Follow prompts and copy your `BOT_TOKEN`.
 
 ### 2. Get your Group Chat ID
+1. Add your bot to your target Telegram group.
+2. Send a message in the group starting with a slash (e.g., `/start`).
+3. Open `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` in your browser.
+4. Locate `"chat": {"id": -100XXXXXXXXXX}` — that negative number is your `GROUP_CHAT_ID`.
 
-1. Add your bot to the Telegram group
-2. Send any message in the group
-3. Open: `https://api.telegram.org/bot<TOKEN>/getUpdates`
-4. Find `"chat": {"id": -1001234567890}` — that's your `GROUP_CHAT_ID`
-
-### 3. Clone and configure
-
+### 3. Clone & Run Locally
 ```bash
-git clone https://github.com/your-org/lgtm-bot.git
+git clone https://github.com/SxxAq/lgtm-bot.git
 cd lgtm-bot
+
+# Configure environment
 cp .env.example .env
-```
+nano .env  # Add your BOT_TOKEN and GROUP_CHAT_ID
 
-Edit `.env`:
-```env
-BOT_TOKEN=your_bot_token_from_botfather
-GROUP_CHAT_ID=-1001234567890
-GITHUB_TOKEN=your_github_pat          # Optional but recommended
-ADMIN_USERNAMES=saalim,rachit          # Your Telegram usernames
-```
-
-### 4. Run
-
-```bash
-python -m venv .venv
+# Set up virtual environment & run
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-alembic upgrade head        # Create database tables
-python -m app.main          # Start the bot (polling mode)
+alembic upgrade head
+python -m app.main
 ```
-
-That's it. The bot is live. Open your group and try `/pr help`.
+Your bot is live! Open Telegram and send `/pr help` or `/pr board`.
 
 ---
 
-## Commands
+## ☁️ Deployment Guides
 
-### PR Management
+### Option 1: Railway (Recommended — $5 Free Monthly Credit)
+1. Go to [railway.app](https://railway.app) and click **+ New Project** → **Deploy from GitHub repo**.
+2. Select `SxxAq/lgtm-bot`.
+3. In your Railway service dashboard, go to **Variables** and add:
+   - `BOT_TOKEN` = `your_telegram_bot_token`
+   - `GROUP_CHAT_ID` = `your_group_chat_id`
+   - `ADMIN_USERNAMES` = `your_username`
+   - `GITHUB_REPO` = `fossasia/eventyay`
+4. Deploy! Railway automatically detects the `Dockerfile` and builds your service.
 
-| Command | Description |
-|---------|-------------|
-| `/pr add <number>` | Add a PR to the review queue |
-| `/pr take <number>` | Claim a PR for review |
-| `/pr done <number>` | Mark your review as complete |
-| `/pr priority <number>` | Flag as priority — notifies the group |
-| `/pr board` | Show the full review board |
-| `/pr pick` | Auto-assign the best PR to you |
-| `/pr pending` | List all waiting/in-review PRs |
-| `/pr mine` | Show your active reviews |
+### Option 2: Koyeb (100% Free — No Credit Card Required)
+1. Sign up at [koyeb.com](https://www.koyeb.com) using GitHub.
+2. Click **Create Service** → **GitHub** → select `SxxAq/lgtm-bot`.
+3. Add environment variables (`BOT_TOKEN`, `GROUP_CHAT_ID`, `ADMIN_USERNAMES`).
+4. Click **Deploy**. Koyeb runs 24/7 without sleeping.
 
-### Statistics
-
-| Command | Description |
-|---------|-------------|
-| `/pr stats` | Reviewer activity summary |
-| `/pr leaderboard` | Top reviewers ranked |
-| `/pr streak` | Review streaks 🔥 |
-| `/pr aging` | Show PR age report |
-
-### Admin Only
-
-| Command | Description |
-|---------|-------------|
-| `/pr sync` | Sync all PR statuses with GitHub |
-| `/pr force-close <number>` | Force-close a PR |
-| `/pr remove <number>` | Remove PR from queue entirely |
-| `/pr status <number> <STATUS>` | Manually set PR status |
-
-Valid statuses: `WAITING_REVIEW`, `IN_REVIEW`, `READY_TO_MERGE`, `CHANGES_REQUESTED`, `MERGED`, `CLOSED`
-
----
-
-## Status Logic
-
-| Status | Condition |
-|--------|-----------|
-| `WAITING_REVIEW` | No active reviewers |
-| `IN_REVIEW` | At least 1 active reviewer |
-| `READY_TO_MERGE` | 2+ reviewers completed |
-| `CHANGES_REQUESTED` | Set manually by admin |
-| `MERGED` | Detected via GitHub sync |
-| `CLOSED` | Detected via GitHub sync |
-
----
-
-## Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `BOT_TOKEN` | ✅ | — | Telegram bot token from @BotFather |
-| `GROUP_CHAT_ID` | ✅ | — | Target group chat ID (negative number) |
-| `GITHUB_TOKEN` | ⬜ | — | GitHub PAT (raises rate limit to 5000/hr) |
-| `GITHUB_REPO` | ⬜ | `fossasia/eventyay-talk` | Repository to track |
-| `DATABASE_URL` | ⬜ | `sqlite+aiosqlite:///./lgtm.db` | SQLite path |
-| `ADMIN_USERNAMES` | ⬜ | — | Comma-separated admin usernames |
-| `DIGEST_HOUR` | ⬜ | `14` | Daily digest hour (UTC) |
-| `DIGEST_MINUTE` | ⬜ | `30` | Daily digest minute (UTC) |
-| `WEBHOOK_URL` | ⬜ | — | Public HTTPS URL for webhook mode |
-
----
-
-## Running Tests
-
-```bash
-pytest --cov=app --cov-report=term-missing
-```
-
-Expected coverage: **≥ 80%**
-
----
-
-## Deployment
-
-### Option 1: Local / VPS (simplest)
-
-```bash
-# Install as a systemd service for 24/7 uptime
-sudo nano /etc/systemd/system/lgtm-bot.service
-```
-
-```ini
-[Unit]
-Description=LGTM Bot
-After=network.target
-
-[Service]
-User=youruser
-WorkingDirectory=/home/youruser/lgtm-bot
-Environment=PATH=/home/youruser/lgtm-bot/.venv/bin
-ExecStart=/home/youruser/lgtm-bot/.venv/bin/python -m app.main
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```bash
-sudo systemctl enable --now lgtm-bot
-```
-
-### Option 2: Docker
-
+### Option 3: Docker Compose (Self-Hosted VPS)
 ```bash
 docker-compose up -d --build
 ```
 
-### Option 3: Railway (free tier)
+---
 
-1. Push to GitHub
-2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
-3. Add environment variables in the Railway dashboard
-4. Deploy
+## ⚙️ Environment Variables
 
-### Option 4: Fly.io (free tier)
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `BOT_TOKEN` | ✅ | — | Telegram bot token from @BotFather |
+| `GROUP_CHAT_ID` | ✅ | `0` | Target Telegram group chat ID (negative integer) |
+| `GITHUB_TOKEN` | ⬜ | `""` | GitHub Personal Access Token (raises rate limit to 5000 req/hr) |
+| `GITHUB_REPO` | ⬜ | `fossasia/eventyay` | Primary default GitHub repository |
+| `DATABASE_URL` | ⬜ | `sqlite+aiosqlite:///./lgtm.db` | Async database connection URL (supports SQLite & PostgreSQL) |
+| `ADMIN_USERNAMES` | ⬜ | `""` | Comma-separated admin usernames (without `@`) |
+| `DIGEST_HOUR` | ⬜ | `14` | Daily digest hour (UTC) |
+| `DIGEST_MINUTE` | ⬜ | `30` | Daily digest minute (UTC) |
+
+---
+
+## 🧪 Testing
+
+The repository features full test coverage for core business logic, status state machines, and message formatters using `pytest` and `pytest-asyncio`.
 
 ```bash
-fly auth login
-fly launch --no-deploy
-# Set secrets:
-fly secrets set BOT_TOKEN=xxx GROUP_CHAT_ID=-xxx GITHUB_TOKEN=xxx
-fly deploy
+BOT_TOKEN=test_token GROUP_CHAT_ID=12345 pytest --cov=app --cov-report=term-missing
 ```
 
 ---
 
-## Project Structure
+## 📐 Architecture & Tech Stack
 
+```text
+Telegram Update (Polling / Webhook)
+            │
+            ▼
+   PTB Application Router (/pr)
+            │
+            ▼
+   pr_service.py (Business Logic)
+      │                     │
+      ▼                     ▼
+Async Database         GitHub REST API
+(SQLite / PostgreSQL)   (httpx client)
 ```
-lgtm-bot/
-├── app/
-│   ├── main.py              # Entry point (polling or webhook)
-│   ├── config.py            # Settings (pydantic-settings)
-│   ├── database.py          # Async SQLAlchemy setup
-│   ├── models/              # ORM models: PR, ReviewerAssignment, User
-│   ├── services/            # Business logic (pr_service, user_service)
-│   ├── github/              # GitHub API client + parser
-│   ├── telegram/            # Bot factory, formatters, keyboards
-│   ├── commands/            # PTB command handlers + inline buttons
-│   ├── scheduler/           # APScheduler jobs (sync, digest)
-│   └── utils/               # Exceptions, decorators
-├── migrations/              # Alembic migrations
-├── tests/                   # pytest test suite
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── alembic.ini
-└── .env.example
-```
+
+- **Framework**: `python-telegram-bot` 21.6 (Async)
+- **ORM & DB**: SQLAlchemy 2.0 (Async) + `aiosqlite` / `asyncpg` + Alembic
+- **Validation**: Pydantic v2 & `pydantic-settings`
+- **Scheduler**: APScheduler 3.10
+- **HTTP Client**: `httpx`
 
 ---
 
-## Architecture
+## 📄 License
 
-```
-Telegram Update
-      ↓
-CommandHandler (/pr)
-      ↓
-pr_commands.py (dispatcher)
-      ↓
-pr_service.py (business logic)
-      ↓         ↓
-  database    github_client
-  (SQLite)  (GitHub REST API)
-```
-
-- **Polling mode** by default — works locally with no server
-- **Webhook mode** — set `WEBHOOK_URL` for production
-- **Async throughout** — `aiosqlite` + `httpx.AsyncClient`
-- **APScheduler** — sync every 30 min, daily digest at configured time
+Distributed under the MIT License. See `LICENSE` for details.

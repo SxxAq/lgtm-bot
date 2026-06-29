@@ -32,9 +32,20 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def init_db() -> None:
-    """Create all tables (used at startup; prefer Alembic for migrations)."""
-    # Import models so they register with Base.metadata
+    """Create all tables and self-heal missing columns."""
     from app.models import pr, reviewer, user  # noqa: F401
+    from sqlalchemy import inspect, text
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        def _heal_columns(sync_conn):
+            inspector = inspect(sync_conn)
+            if "pull_requests" in inspector.get_table_names():
+                cols = [c["name"] for c in inspector.get_columns("pull_requests")]
+                if "repo" not in cols:
+                    sync_conn.execute(
+                        text("ALTER TABLE pull_requests ADD COLUMN repo VARCHAR(256) DEFAULT 'fossasia/eventyay'")
+                    )
+
+        await conn.run_sync(_heal_columns)

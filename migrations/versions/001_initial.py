@@ -19,7 +19,8 @@ def upgrade() -> None:
     op.create_table(
         "pull_requests",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("github_pr_number", sa.Integer, unique=True, nullable=False),
+        sa.Column("github_pr_number", sa.Integer, nullable=False),
+        sa.Column("repo", sa.String(256), nullable=False, server_default="fossasia/eventyay"),
         sa.Column("title", sa.String(512), nullable=False),
         sa.Column("author", sa.String(128), nullable=False),
         sa.Column("url", sa.String(512), nullable=False),
